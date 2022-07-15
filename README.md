@@ -10,4 +10,4 @@ Fit data from Chladni plots with harmonic curves and plot them. For input the co
 - [**shu2022_wpd_fig7_all_fit.png**](https://github.com/csanadm/ChladniProject/blob/main/shu2022_wpd_fig7_all_fit.png): Resulting plot if using the above example JSON file.
 
 ## Example output
-![Example output plot]([https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png](https://raw.githubusercontent.com/csanadm/ChladniProject/main/shu2022_wpd_fig7_all_fit.png) "Example output plot")
+![Example output plot](https://raw.githubusercontent.com/csanadm/ChladniProject/main/shu2022_wpd_fig7_all_fit.png)

@@ -15,7 +15,9 @@
 #include "TCanvas.h"
 #include "TFitResult.h"
 #include "TLatex.h"
+#include "TFile.h"
 #include "TStyle.h"
+#include "TImage.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -103,9 +105,9 @@ int main(int argc, char *argv[])
   
   //Graph objects for drawing
   vector<TGraphPolar*> phi_vs_r_data_plot;
-  //vector<TGraphPolar*> phi_vs_r_fit;
+  vector<TGraphPolar*> phi_vs_r_fit;
   const int Ncurves = phi_r_pair_vecs.size();
-  TGraphPolar* phi_vs_r_fit[Ncurves];
+  //TGraphPolar* phi_vs_r_fit[Ncurves];
   
   //Parameters and errors to be saved
   vector<double> anval(Ncurves,0);
@@ -170,7 +172,7 @@ int main(int argc, char *argv[])
       phicalcvector.at(ip) = phi;
       rcalcvector.at(ip) = FitFunc(&phi,min.X());
     } 
-    phi_vs_r_fit[icurve] = new TGraphPolar(phicalcvector.size(),&phicalcvector[0],&rcalcvector[0]);
+    phi_vs_r_fit.push_back(new TGraphPolar(phicalcvector.size(),&phicalcvector[0],&rcalcvector[0]));
   }
   //Creating a canvas to draw on
   TCanvas *c = new TCanvas("c","c",1024,1024);
@@ -179,47 +181,43 @@ int main(int argc, char *argv[])
   { 
     //Draw data points
     double rmax = 1.5;
-    phi_vs_r_data_plot[icurve]->SetTitle(infilename.c_str());
-    phi_vs_r_data_plot[icurve]->Draw("P");
+    phi_vs_r_data_plot.at(icurve)->SetTitle(infilename.c_str());
+    phi_vs_r_data_plot.at(icurve)->Draw("P");
     c->Update();
-    phi_vs_r_data_plot[icurve]->SetMinPolar(0);
-    phi_vs_r_data_plot[icurve]->SetMaxPolar(2*M_PI);
-    phi_vs_r_data_plot[icurve]->SetMinRadial(0);
-    phi_vs_r_data_plot[icurve]->SetMaxRadial(rmax);
-    phi_vs_r_data_plot[icurve]->SetMarkerStyle(20);
-    phi_vs_r_data_plot[icurve]->SetMarkerSize(2.);
-    phi_vs_r_data_plot[icurve]->SetMarkerColor(colors[icurve]);
-    phi_vs_r_data_plot[icurve]->Draw("P");
+    phi_vs_r_data_plot.at(icurve)->SetMinPolar(0);
+    phi_vs_r_data_plot.at(icurve)->SetMaxPolar(2*M_PI);
+    phi_vs_r_data_plot.at(icurve)->SetMinRadial(0);
+    phi_vs_r_data_plot.at(icurve)->SetMaxRadial(rmax);
+    phi_vs_r_data_plot.at(icurve)->SetMarkerStyle(20);
+    phi_vs_r_data_plot.at(icurve)->SetMarkerSize(2.);
+    phi_vs_r_data_plot.at(icurve)->SetMarkerColor(colors[icurve]);
+    phi_vs_r_data_plot.at(icurve)->Draw("P");
     
     //Draw fitted curve
-    phi_vs_r_fit[icurve]->SetLineColor(colors[icurve]);
-    phi_vs_r_fit[icurve]->SetLineWidth(4);
-    phi_vs_r_fit[icurve]->Draw("L");
+    phi_vs_r_fit.at(icurve)->SetLineColor(colors[icurve]);
+    phi_vs_r_fit.at(icurve)->SetLineWidth(4);
+    phi_vs_r_fit.at(icurve)->Draw("L");
   }
   //Save image
   c->Print(Form("%s_all_fit.png",outfilebase.c_str()));
-  //if(dataset==0) c->Print(Form("shu_plots_and_data/shuSQ%02d_all_fit.png",nplot));
-  //else           c->Print(Form("circular_plots_and_data/circular_%d_all_fit.png",nplot));
   
-  /*
+  //Create overlaid version -- NOT WORKING!
+  //TImage *img = TImage::Open(Form("%s.png",outfilebase.c_str()));
+  //img->Draw("x");
+  //phi_vs_r_data_plot.at(icurve)->Draw("P");
+  //c->Print(Form("%s_overlay_try.png",outfilebase.c_str()));
+  
   //Print parameters
-  const char* outfilename = (dataset==0)?"chladni_fits_shu.out":"chladni_fits_circular.out";
-  ofstream outfile(outfilename,ofstream::app);
-  //outfile << "Printing parameters a1, err, a2, err, ..., b1, err, b2, err, ..., c1, err, c2, err, ..." << endl;
-  outfile << "Plot #" << nplot;
-  for(int icurve=0; icurve<Ncurves; icurve++) outfile << "\t" << anval[icurve] << "\t" << anerr[icurve];
-  for(int icurve=0; icurve<Ncurves; icurve++) outfile << "\t" << bnval[icurve] << "\t" << bnerr[icurve];
-  for(int icurve=0; icurve<Ncurves; icurve++) outfile << "\t" << cnval[icurve] << "\t" << cnerr[icurve];
+  ofstream outfile(Form("%s_fits.out",outfilebase.c_str()),ofstream::app);
+  for(int icurve=0; icurve<Ncurves; icurve++) outfile << "\t" << anval.at(icurve) << "\t" << anerr.at(icurve);
+  for(int icurve=0; icurve<Ncurves; icurve++) outfile << "\t" << bnval.at(icurve) << "\t" << bnerr.at(icurve);
+  for(int icurve=0; icurve<Ncurves; icurve++) outfile << "\t" << cnval.at(icurve) << "\t" << cnerr.at(icurve);
   outfile << endl;
   
   //Clean up and return
   delete phi_vs_r_data;
   for(int icurve=0; icurve<Ncurves; icurve++)
-  {
-    delete phi_vs_r_data_plot[icurve];
-    delete phi_vs_r_fit[icurve];
-  }
-  */
+    delete phi_vs_r_fit.at(icurve);
   delete c;
   return 0;
 } 

@@ -179,8 +179,8 @@ int main(int argc, char *argv[])
   { 
     //Draw data points
     double rmax = 1.5;
-    if(outfilebase.find("circular") != std::string::npos) rmax = 0.003; //For the circular plots, maximal radius shall be much smaller - this could be a command line setting later on
-    if(outfilebase.find("circular_4") != std::string::npos) rmax = 0.015; //Somehow circular_4.json has larger values
+    //if(outfilebase.find("circular") != std::string::npos) rmax = 0.003; //For the circular plots, maximal radius shall be much smaller - this could be a command line setting later on
+    //if(outfilebase.find("circular_4") != std::string::npos) rmax = 0.015; //Somehow circular_4.json has larger values
     phi_vs_r_data_plot[icurve]->SetTitle(infilename.c_str());
     phi_vs_r_data_plot[icurve]->Draw("P");
     c->Update();

@@ -8,3 +8,6 @@ Fit data from Chladni plots with harmonic curves and plot them. For input the co
 - [**chladni_fits.cc**](https://github.com/csanadm/ChladniProject/blob/main/chladni_fits.cc): Code for fitting and plotting
 - [**shu2022_wpd_fig7.json**](https://github.com/csanadm/ChladniProject/blob/main/shu2022_wpd_fig7.json): Example data file from the 7th subplot of Fig. 2(b) of [Shu et al., Entropy 2022, 24(2), 215](https://www.mdpi.com/1099-4300/24/2/215), data extracted with [Automeris WebPlotDigitizer](https://automeris.io/WebPlotDigitizer/)
 - [**shu2022_wpd_fig7_all_fit.png**](https://github.com/csanadm/ChladniProject/blob/main/shu2022_wpd_fig7_all_fit.png): Resulting plot if using the above example JSON file.
+
+## Example output
+![Example output plot]([https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png](https://raw.githubusercontent.com/csanadm/ChladniProject/main/shu2022_wpd_fig7_all_fit.png) "Example output plot")

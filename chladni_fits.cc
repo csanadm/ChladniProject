@@ -123,8 +123,8 @@ int main(int argc, char *argv[])
     vector<double> phivector, rvector;
     for(auto& phi_r_pair : phi_r_pair_vec)
     {
-      phivector.push_back(phi_r_pair.first*M_PI/180.);
-      rvector.push_back(phi_r_pair.second);
+      phivector.push_back(phi_r_pair.first*M_PI/180.); //convert to radians
+      rvector.push_back(abs(phi_r_pair.second)); //take absolute value as sometimes negatives are read in the json file
     }
     phi_vs_r_data = new TGraphPolar(phivector.size(),&phivector[0],&rvector[0]);
     
@@ -140,12 +140,13 @@ int main(int argc, char *argv[])
     min.SetFunction(ftr);
     
     // Set the variables to be minimized
-    min.SetVariable(0, "cn", 1, 0.1);
-    min.SetLimitedVariable(1, "an", 0.1, 0.1, -0.7, 0.7);
+    min.SetLowerLimitedVariable(0, "cn", 1, 0.1, 0.0);
+    min.SetLimitedVariable(1, "an", 0.0, 0.1, -0.7, 0.7);
     min.SetLimitedVariable(2, "bn", 0.0, 0.1, -0.7, 0.7);
     //min.FixVariable(1);
-    //if(dataset==1) { min.FixVariable(1); min.FixVariable(2); } //Circular pattern for circular data
+    if(outfilebase.find("circular") != std::string::npos) { min.FixVariable(1); min.FixVariable(2); } //Circular pattern for circular data
     if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig5" && icurve==3) min.FixVariable(2);
+    if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig7" && icurve==5) min.FixVariable(2);
     
     //Perform minimalization and error calculation
     min.Minimize(); 
@@ -178,7 +179,8 @@ int main(int argc, char *argv[])
   { 
     //Draw data points
     double rmax = 1.5;
-    //if(dataset==1) rmax = 0.003;
+    if(outfilebase.find("circular") != std::string::npos) rmax = 0.003; //For the circular plots, maximal radius shall be much smaller - this could be a command line setting later on
+    if(outfilebase.find("circular_4") != std::string::npos) rmax = 0.015; //Somehow circular_4.json has larger values
     phi_vs_r_data_plot[icurve]->SetTitle(infilename.c_str());
     phi_vs_r_data_plot[icurve]->Draw("P");
     c->Update();

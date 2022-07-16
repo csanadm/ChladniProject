@@ -142,13 +142,21 @@ int main(int argc, char *argv[])
     min.SetFunction(ftr);
     
     // Set the variables to be minimized
-    min.SetLowerLimitedVariable(0, "cn", 1, 0.1, 0.0);
-    min.SetLimitedVariable(1, "an", 0.0, 0.1, -0.7, 0.7);
-    min.SetLimitedVariable(2, "bn", 0.0, 0.1, -0.7, 0.7);
+    min.SetLowerLimitedVariable(0, "cn", 1, 0.01, 0.0);
+    min.SetLimitedVariable(1, "an", 0.0, 0.01, -0.9, 0.9);
+    min.SetLimitedVariable(2, "bn", 0.0, 0.01, -0.9, 0.9);
     //min.FixVariable(1);
     if(outfilebase.find("circular") != std::string::npos) { min.FixVariable(1); min.FixVariable(2); } //Circular pattern for circular data
+    if(icurve==0) min.FixVariable(2); //No higher order corrections for the first curve
+    if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig4" && icurve==3) min.FixVariable(2);
     if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig5" && icurve==3) min.FixVariable(2);
+    if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig6" && icurve==4) min.FixVariable(2);
     if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig7" && icurve==5) min.FixVariable(2);
+    if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig8" && icurve==1) min.FixVariable(2);
+    if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig8" && icurve==3) min.FixVariable(2);
+    if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig8" && icurve==5) min.FixVariable(2);
+    if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig9" && icurve==5) min.FixVariable(2);
+    if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig10" && icurve==5) min.FixVariable(2);
     
     //Perform minimalization and error calculation
     min.Minimize(); 

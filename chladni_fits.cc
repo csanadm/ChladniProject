@@ -29,16 +29,18 @@ TGraphPolar* phi_vs_r_data;
 const int NPARS = 3;
 
 //Colors to be used in plotting
-const int colors[7] = {4, 3, 2, 1, 6, 5, 7}; //blue, green, red, black, magenta, yellow, cyan
+const int colors[10] = {4, 3, 2, 1, 6, 5, 7, 46, 41, 28}; //blue, green, red, black, magenta, yellow, cyan, gold, copper, bronze
 
 //Fit function, r versus phi
 double FitFunc(const double *x, const double *pars)
 {
   double phi = x[0];
-  double cc = pars[0];
-  double a4 = pars[1];
-  double a8 = pars[2];
-  return cc + a4*cos(4*phi) + a8*cos(8*phi);
+  double cn = pars[0];
+  double an = pars[1];
+  double bn = pars[2];
+  double nsymm = pars[3];
+  double phi0 = pars[4];
+  return cn + an*cos(nsymm*(phi-phi0)) + bn*cos(2*nsymm*(phi-phi0));
 }
 
 //Chi-square function to be minimized
@@ -61,9 +63,15 @@ double FuncToMin(const double *pars)
 int main(int argc, char *argv[])
 {
   //Command line arguments
-  if(argc!=2) { cerr << "Usage: " << argv[0] << " <input/output file basename>" << endl; return 1; }
-  string outfilebase = argv[1];
+  if(argc<3) { cerr << "Usage: " << argv[0] << " <symmetry order, 3 or 4, anything else means circle> <input/output file basename> <phi0 in deg>" << endl; return 1; }
+  int nsymm = atoi(argv[1]);
+  if(nsymm!=3 && nsymm!=4) { cerr << "Allowed symmetry orders: 3 or 4. Setting it to -1 (meaning: circular plate)" << endl; nsymm = -1; }
+  string outfilebase = argv[2];
   string infilename = outfilebase + ".json";
+  double phi0 = 0;
+  if(argc>3) phi0 = atoi(argv[3])*M_PI/180.;
+  
+  
   // read a JSON file
   ifstream infile(infilename);
   json jsondata;
@@ -138,16 +146,20 @@ int main(int argc, char *argv[])
     min.SetMaxFunctionCalls(1000000);
     min.SetMaxIterations(100000);
     min.SetTolerance(0.001);
-    ROOT::Math::Functor ftr(&FuncToMin,NPARS); 
+    ROOT::Math::Functor ftr(&FuncToMin,NPARS+2);  //Plus two to acommodate not fitted (constant) parameter nsymm (3 for triangle, 4 for square, -1 for circle) and phi0 (shift of 0 degrees in the plots)
     min.SetFunction(ftr);
     
     // Set the variables to be minimized
     min.SetLowerLimitedVariable(0, "cn", 1, 0.01, 0.0);
     min.SetLimitedVariable(1, "an", 0.0, 0.01, -0.9, 0.9);
     min.SetLimitedVariable(2, "bn", 0.0, 0.01, -0.9, 0.9);
+    min.SetFixedVariable(3,"nsymm",nsymm);
+    min.SetFixedVariable(4,"phi0",phi0);
     //min.FixVariable(1);
-    if(outfilebase.find("circular") != std::string::npos) { min.FixVariable(1); min.FixVariable(2); } //Circular pattern for circular data
+    if(nsymm==-1) { min.FixVariable(1); min.FixVariable(2); } //Circular pattern for circular data
     if(icurve==0) min.FixVariable(2); //No higher order corrections for the first curve
+
+    //Fixations for some of the square plots from the 2022 Shu paper
     if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig4" && icurve==3) min.FixVariable(2);
     if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig5" && icurve==3) min.FixVariable(2);
     if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig6" && icurve==4) min.FixVariable(2);
@@ -157,6 +169,17 @@ int main(int argc, char *argv[])
     if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig8" && icurve==5) min.FixVariable(2);
     if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig9" && icurve==5) min.FixVariable(2);
     if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig10" && icurve==5) min.FixVariable(2);
+    if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig11" && icurve==6) min.FixVariable(2);
+    if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig12" && icurve==5) min.FixVariable(2);
+    if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig12" && icurve==6) min.FixVariable(2);
+    if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig12" && icurve==7) min.FixVariable(2);
+    if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig13" && icurve==6) min.FixVariable(1);
+    if(outfilebase=="shu_plots_and_data/shu2022_wpd_fig13" && icurve==6) min.FixVariable(2);
+    
+    //Fixations for some of the triangle plots from the 2022 Shu paper
+    if(outfilebase=="triangles_shu/shuTR01_wpd" && icurve==1) min.FixVariable(2);
+    if(outfilebase=="triangles_shu/shuTR01_wpd" && icurve==2) min.FixVariable(2);
+    if(outfilebase=="triangles_shu/shuTR04_wpd" && icurve==3) min.FixVariable(2);
     
     //Perform minimalization and error calculation
     min.Minimize(); 
@@ -189,6 +212,7 @@ int main(int argc, char *argv[])
   { 
     //Draw data points
     double rmax = 1.5;
+    if(nsymm==3) rmax=0.7; //triangle plots are smaller
     phi_vs_r_data_plot.at(icurve)->SetTitle(infilename.c_str());
     phi_vs_r_data_plot.at(icurve)->Draw("P");
     c->Update();
@@ -217,10 +241,9 @@ int main(int argc, char *argv[])
   
   //Print parameters
   ofstream outfile(Form("%s_fits.out",outfilebase.c_str()),ofstream::app);
-  for(int icurve=0; icurve<Ncurves; icurve++) outfile << "\t" << anval.at(icurve) << "\t" << anerr.at(icurve);
-  for(int icurve=0; icurve<Ncurves; icurve++) outfile << "\t" << bnval.at(icurve) << "\t" << bnerr.at(icurve);
-  for(int icurve=0; icurve<Ncurves; icurve++) outfile << "\t" << cnval.at(icurve) << "\t" << cnerr.at(icurve);
-  outfile << endl;
+  outfile << outfilebase << " an";  for(int icurve=0; icurve<Ncurves; icurve++) outfile << "\t" << anval.at(icurve) << "\t" << anerr.at(icurve); outfile << endl;
+  outfile << outfilebase << " bn";  for(int icurve=0; icurve<Ncurves; icurve++) outfile << "\t" << bnval.at(icurve) << "\t" << bnerr.at(icurve); outfile << endl;
+  outfile << outfilebase << " cn";  for(int icurve=0; icurve<Ncurves; icurve++) outfile << "\t" << cnval.at(icurve) << "\t" << cnerr.at(icurve); outfile << endl;
   
   //Clean up and return
   delete phi_vs_r_data;

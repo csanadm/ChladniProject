@@ -1,5 +1,5 @@
 # ChladniProject
-Fit data from Chladni plots with harmonic curves and plot them. For input the code needs a JSON file from such as the one produced with [Automeris WebPlotDigitizer](https://automeris.io/WebPlotDigitizer/). It furthermore requires gcc (tested with 5.4), GNU Make (tested with 4.1), ROOT (tested with 6.15), the latter also including the Minuit2 component (for the fitting).
+Fit data from Chladni plots with harmonic curves and plot them. For input the code needs a JSON file from such as the one produced with [Automeris WebPlotDigitizer](https://automeris.io/WebPlotDigitizer/). It furthermore requires gcc (tested with 5.4), GNU Make (tested with 4.1), ROOT (tested with 6.15), the latter also including the Minuit2 component (for the fitting). A new, Python-based version of this is available at [TheWorks GitHub](https://github.com/theworksinstitute/chladni-plates/tree/master/src_MC)
 
 ## File content
 - [**README.md**](https://github.com/csanadm/ChladniProject/blob/main/README.md): This README file
